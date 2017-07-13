@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger('mctest')
 
 group = '232.8.8.8'
-MCAST_PORT = 7878
+mport = 1900
 mttl = 6
 message = 'multicast test tool'
 
@@ -20,7 +20,8 @@ parser.add_argument("-send", metavar="string", help="Send a Message",
                     type=str)
 parser.add_argument("-receive", help="Receive Messages from Group",
                     action="store_true")
-parser.add_argument("-group", metavar="Multicast Group (default: 232.8.8.8", type=str)
+parser.add_argument("-group", metavar="Multicast Group (default: 232.8.8.8)", type=str)
+parser.add_argument("-port", metavar="UDP Port", help="UDP Port to receive on (default 1900)")
 parser.add_argument('-ttl', metavar='int', help="Multicast TTL (default 4)", type=int)
 parser.add_argument("-v", help="Verbose Output", action="store_true")
 args = parser.parse_args()
@@ -29,14 +30,18 @@ def receiver(group):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(('', MCAST_PORT))  # use MCAST_GRP instead of '' to listen only
+    sock.bind((group, mport))  # use MCAST_GRP instead of '' to listen only
                                 # to MCAST_GRP, not all groups on MCAST_PORT
     mreq = struct.pack("4sl", socket.inet_aton(group), socket.INADDR_ANY)
 
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
+    print('Listing on ' + group + ' port ' + str(mport))
+
     while True:
-        print ('Received from ' + group + ': ' + sock.recv(1024))
+        (data, address) = sock.recvfrom(1024)
+        print ('Received on ' + group + ' from ' + address[0] + \
+        ' on port ' + str(address[1]) + ': ' + data)
 
 
 def sender(group):
@@ -47,13 +52,15 @@ def sender(group):
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         mcast_msg = message + ': ' + time_now
         print('Sending to ' + group + ' (TTL ' + str(mttl) + '): ' + mcast_msg)
-        sock.sendto(mcast_msg, (group, MCAST_PORT))
+        sock.sendto(mcast_msg, (group, mport))
         time.sleep(1)
 
 if args.group:
     group = args.group
 if args.ttl:
     mttl = args.ttl
+if args.port:
+    mport = 1900
 
 if args.send:
     message = args.send
