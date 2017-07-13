@@ -1,14 +1,28 @@
 #!/usr/bin/env python
 import time
+from datetime import datetime
 import socket
 import sys
 import struct
 import argparse
+import logging
+
+logger = logging.getLogger('mctest')
 
 group = '232.8.8.8'
 MCAST_PORT = 7878
 mttl = 6
+message = 'multicast test tool'
 
+parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Multicast Send/Receive Test Tool')
+parser.add_argument("-send", metavar="string", help="Send a Message",
+                    type=str)
+parser.add_argument("-receive", help="Receive Messages from Group",
+                    action="store_true")
+parser.add_argument("-group", metavar="Multicast Group (default: 232.8.8.8", type=str)
+parser.add_argument("-v", help="Verbose Output", action="store_true")
+args = parser.parse_args()
 
 def receiver(group):
 
@@ -21,7 +35,27 @@ def receiver(group):
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
     while True:
-        print 'test'
-        print sock.recv(16)
+        print ('Received: ' + sock.recv(1024))
 
-receiver(group)
+
+def sender(group):
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+    while 1:
+        time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        mcast_msg = message + ': ' + time_now
+        print('Sending: ' + mcast_msg)
+        sock.sendto(mcast_msg, (group, MCAST_PORT))
+        time.sleep(1)
+
+if args.group:
+    group = args.group
+
+if args.send:
+    message = args.send
+    sender(group)
+elif args.receive:
+    receiver(group)
+else:
+    parser.print_help()
