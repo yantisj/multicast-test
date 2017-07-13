@@ -5,7 +5,7 @@ import sys
 import struct
 import argparse
 
-group = '232.44.44.233'
+group = '232.8.8.8'
 MCAST_PORT = 7878
 mttl = 6
 
