@@ -27,6 +27,7 @@ parser.add_argument("-v", help="Verbose Output", action="store_true")
 args = parser.parse_args()
 
 def receiver(group):
+    'Receive on a multicast group'
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -41,10 +42,11 @@ def receiver(group):
     while True:
         (data, address) = sock.recvfrom(1024)
         print ('Received on ' + group + ' from ' + address[0] + \
-        ' on port ' + str(address[1]) + ': ' + data)
+        ' from port ' + str(address[1]) + ': ' + data)
 
 
 def sender(group):
+    'Send to a multicast group'
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, mttl, 2)
