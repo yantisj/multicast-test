@@ -11,7 +11,7 @@ logger = logging.getLogger('mctest')
 
 group = '232.8.8.8'
 mport = 1900
-mttl = 6
+mttl = 10
 message = 'multicast test tool'
 
 parser = argparse.ArgumentParser()
@@ -26,35 +26,36 @@ parser.add_argument('-ttl', metavar='int', help="Multicast TTL (default 6)", typ
 parser.add_argument("-v", help="Verbose Output", action="store_true")
 args = parser.parse_args()
 
-def receiver(group):
+def receiver(mgroup):
     'Receive on a multicast group'
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((group, mport))  # use MCAST_GRP instead of '' to listen only
+    sock.bind((mgroup, mport))  # use MCAST_GRP instead of '' to listen only
                                 # to MCAST_GRP, not all groups on MCAST_PORT
     mreq = struct.pack("4sl", socket.inet_aton(group), socket.INADDR_ANY)
 
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-    print('Listing on ' + group + ' port ' + str(mport))
+    print('Listing on ' + mgroup + ' port ' + str(mport))
 
     while True:
         (data, address) = sock.recvfrom(1024)
-        print ('Received on ' + group + ' from ' + address[0] + \
+        print ('Received on ' + mgroup + ' from ' + address[0] + \
         ' from port ' + str(address[1]) + ': ' + data)
 
 
-def sender(group):
+def sender(mgroup):
     'Send to a multicast group'
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.setsockopt(socket.IPPROTO_IP, mttl, 32)
+    ttl_bin = struct.pack('@i', mttl)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
     while 1:
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         mcast_msg = message + ': ' + time_now
-        print('Sending to ' + group + ' (TTL ' + str(mttl) + '): ' + mcast_msg)
-        sock.sendto(mcast_msg, (group, mport))
+        print('Sending to ' + mgroup + ' (TTL ' + str(mttl) + '): ' + mcast_msg)
+        sock.sendto(mcast_msg, (mgroup, mport))
         time.sleep(1)
 
 if args.group:
