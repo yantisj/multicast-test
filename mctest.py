@@ -22,7 +22,7 @@ parser.add_argument("-receive", help="Receive Messages from Group",
                     action="store_true")
 parser.add_argument("-group", metavar="Multicast Group (default: 232.8.8.8)", type=str)
 parser.add_argument("-port", metavar="UDP Port", help="UDP Port to receive on (default 1900)")
-parser.add_argument('-ttl', metavar='int', help="Multicast TTL (default 4)", type=int)
+parser.add_argument('-ttl', metavar='int', help="Multicast TTL (default 6)", type=int)
 parser.add_argument("-v", help="Verbose Output", action="store_true")
 args = parser.parse_args()
 
@@ -49,7 +49,7 @@ def sender(group):
     'Send to a multicast group'
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.setsockopt(socket.IPPROTO_IP, mttl, 2)
+    sock.setsockopt(socket.IPPROTO_IP, mttl, 32)
     while 1:
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         mcast_msg = message + ': ' + time_now
@@ -60,9 +60,9 @@ def sender(group):
 if args.group:
     group = args.group
 if args.ttl:
-    mttl = args.ttl
+    mttl = int(args.ttl)
 if args.port:
-    mport = 1900
+    mport = args.port
 
 if args.send:
     message = args.send
