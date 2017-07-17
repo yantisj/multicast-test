@@ -22,7 +22,7 @@ parser.add_argument("-receive", help="Receive Messages from Group",
                     action="store_true")
 parser.add_argument("-group", metavar="Multicast Group (default: 232.8.8.8)", type=str)
 parser.add_argument("-port", metavar="UDP Port", help="UDP Port to receive on (default 1900)")
-parser.add_argument('-ttl', metavar='int', help="Multicast TTL (default 6)", type=int)
+parser.add_argument('-ttl', metavar='int', help="Multicast TTL (default 10)", type=int)
 parser.add_argument("-v", help="Verbose Output", action="store_true")
 args = parser.parse_args()
 
@@ -31,8 +31,8 @@ def receiver(mgroup):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((mgroup, mport))  # use MCAST_GRP instead of '' to listen only
-                                # to MCAST_GRP, not all groups on MCAST_PORT
+    sock.bind((mgroup, mport))
+
     mreq = struct.pack("4sl", socket.inet_aton(group), socket.INADDR_ANY)
 
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
@@ -41,7 +41,7 @@ def receiver(mgroup):
 
     while True:
         (data, address) = sock.recvfrom(1024)
-        print ('Received on ' + mgroup + ' from ' + address[0] + \
+        print('Received on ' + mgroup + ' from ' + address[0] + \
         ' from port ' + str(address[1]) + ': ' + data)
 
 
