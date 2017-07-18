@@ -31,7 +31,12 @@ def receiver(mgroup):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((mgroup, mport))
+
+    # Windows workaround
+    try:
+        sock.bind((mgroup, mport))
+    except socket.error:
+        sock.bind(('', mport))
 
     mreq = struct.pack("4sl", socket.inet_aton(group), socket.INADDR_ANY)
 
