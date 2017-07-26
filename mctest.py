@@ -8,7 +8,6 @@ import argparse
 import logging
 import pickle
 
-
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', \
                     level=logging.WARNING)
 
