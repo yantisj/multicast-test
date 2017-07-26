@@ -6,6 +6,11 @@ import sys
 import struct
 import argparse
 import logging
+import pickle
+
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', \
+                    level=logging.WARNING)
 
 logger = logging.getLogger('mctest')
 
@@ -45,9 +50,19 @@ def receiver(mgroup):
     print('Listing on ' + mgroup + ' port ' + str(mport))
 
     while True:
-        (data, address) = sock.recvfrom(1024)
-        print('Received on ' + mgroup + ' from ' + address[0] + \
-        ' from port ' + str(address[1]) + ': ' + data)
+        (data, address) = sock.recvfrom(12000)
+
+        # Try to unpickle log record from a DatagramHandler
+        try:
+            lrtxt = pickle.loads(data[4:])
+            lr = logging.makeLogRecord(lrtxt)
+            logger.handle(lr)
+
+        # Print message normally
+        except Exception as e:
+            print('Exeception', str(e))
+            print('Received on ' + mgroup + ' from ' + address[0] + \
+            ' from port ' + str(address[1]) + ': ' + data)
 
 
 def sender(mgroup):
