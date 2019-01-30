@@ -82,7 +82,7 @@ if args.group:
 if args.ttl:
     mttl = int(args.ttl)
 if args.port:
-    mport = args.port
+    mport = int(args.port)
 
 if args.send:
     message = args.send
